@@ -1,6 +1,6 @@
 ; 最初に実行するべき命令にはglobal宣言が必要
 ; globalはディレクティブ（変換処理を制御するためのもの）
-global _main
+global _start
 
 ; フォンノイマンのマシンでは、メモリがコードとデータの両方に使われている
 ; プログラマはコードとデータを区切りたい
@@ -14,19 +14,19 @@ section .data
 ; データは４つのディレクティブ　db, dw, dd, dqがある
 ; データはどのセクションの内側でも作ることができる
 ; 10は改行を示すのに必要
-message:   db  'Hello, world!', 10
+message:   db  'Hello, world! yep', 10
 ; messageというラベルに対応するアドレス
 
 ; .textセクションには命令を入れる
 section .text
 
 ; ラベル、またはアドレス
-_main:
+_start:
 		; mov命令はある値をレジスタまたはメモリに書き込む
 		; 値は他のレジスタ、メモリから取るか、直接の数値でもいい
 		; ただし、movではメモリからメモリのコピーができない
 		; 両方のオペランドが同じサイズでなければならない
-    mov rax, 0x2000004      ; writeシステムコールの番号をraxに入れる
+    mov rax, 1      ; writeシステムコールの番号をraxに入れる
                             ; The actual syscall number for write is 4
                             ; but in order to make it work under Mac OS X
                             ; we have to add 0x2000000 to it before copying
@@ -36,12 +36,12 @@ _main:
 		; rdi ストリング操作コマンドのdestination側インデックス
     mov rsi, message   
 		; rsi ストリング操作コマンドのソース側インデックス
-    mov rdx, 14
+    mov rdx, 18
 		; rdx 入出力の間、データを格納する
     syscall
 
     ; exit
-    mov rax, 0x2000001      ; exit syscall number
+    mov rax, 60      ; exit syscall number
     xor rdi, rdi            ; exit status
     syscall
 
@@ -55,6 +55,6 @@ _main:
 ; システムコールは6個を超える引数を受け取ることができない
 ; syscall命令を実行する
 
-; nasm -f macho64 hello.asm
-; ld hello.o -L /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib -lSystem -o hello
+; nasm -felf64 hello.asm -o hello.o
+; ld -o hello hello.o
 ; ./hello
